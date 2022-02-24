@@ -1,0 +1,19 @@
+# This just exercise the action on itself with a dummy login at `test.ghcr.io`
+# every time a change is pushed.
+name: test
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: login
+        uses: ./
+        with:
+          registry: test.ghcr.io
+          username: test
+          password: testing
+      - name: dump
+        shell: bash
+        run: cat "${HOME}/.docker/config.json"
+
