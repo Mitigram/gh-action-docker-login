@@ -49,3 +49,10 @@ runs:
                                         ${{ inputs.options }} \
                                         -- \
                                           "${{ inputs.registry }}"
+    -
+      name: Schedule Logout
+      id: logout
+      uses: webiny/action-post-run@2.0.1
+      with:
+        run: >-
+          "${{ github.action_path }}/login.sh" ${{ inputs.options }} -- "${{ inputs.registry }}"
