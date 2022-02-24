@@ -1,0 +1,51 @@
+# https://help.github.com/en/articles/metadata-syntax-for-github-actions
+name: Clientless Docker Login
+description: |
+  GitHub Action to login against a Docker registry. This action works without
+  the Docker client installed, and is aimed at cases when building Docker images
+  without Docker.
+author: 'Emmanuel Frecon <emmanuel.frecon@mitigram.com>'
+branding:
+  icon: 'anchor'
+  color: 'blue'
+
+inputs:
+  registry:
+    description: |
+      Server address of Docker registry. If not set then will default to Docker
+      Hub'
+    required: false
+  username:
+    description: |
+      Username used to log against the Docker registry
+    required: false
+  password:
+    description: |
+      Password or personal access token used to log against the Docker registry
+    required: false
+  logout:
+    description: |
+      Log out from the Docker registry at the end of a job
+    default: 'true'
+    required: false
+  options:
+    description: |
+      Additional options to login script, e.g. -v to print out additional
+      verbose information. This is a semi-internal input and should only be used
+      for debugging.
+    required: false
+
+runs:
+  using: composite
+  steps:
+    -
+      name: Login
+      id: login
+      shell: bash
+      run: |
+        printf %s\\n "${{ inputs.password }}" | "${{ github.action_path }}/login.sh" \
+                                        -i \
+                                        -u "${{ inputs.username }}" \
+                                        ${{ inputs.options }} \
+                                        -- \
+                                          "${{ inputs.registry }}"
