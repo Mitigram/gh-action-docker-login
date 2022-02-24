@@ -14,8 +14,4 @@ jobs:
       - name: dump
         shell: bash
         run: cat "${HOME}/.docker/config.json"
-      -
-        name: Dump after
-        uses: webiny/action-post-run@2.0.1
-        with:
-          run: cat "${HOME}/.docker/config.json"
+
