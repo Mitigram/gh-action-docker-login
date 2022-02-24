@@ -74,10 +74,9 @@ if ! [ -d "$(dirname "$LOGIN_CONFIG")" ]; then
   mkdir -p "$(dirname "$LOGIN_CONFIG")"
   touch "$LOGIN_CONFIG"
 fi
-set -x
 
 # No argument, default to Docker
-if [ "$#" = "0" ]; then
+if [ "$#" = "0" ] || [ -z "$1" ]; then
   LOGIN_REGISTRY=$LOGIN_DEFAULT_REGISTRY
 else
   LOGIN_REGISTRY=$1
