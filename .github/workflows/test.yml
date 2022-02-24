@@ -1,0 +1,16 @@
+name: test
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: login
+        uses: .
+        with:
+          registry: ghcr.io
+          username: test
+          password: testing
+      - name: dump
+        shell: bash
+        run: cat "${{ github.env.HOME }}/.docker/config.json"
