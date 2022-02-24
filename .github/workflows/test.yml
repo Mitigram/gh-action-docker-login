@@ -13,4 +13,4 @@ jobs:
           password: testing
       - name: dump
         shell: bash
-        run: cat "${{ github.env.HOME }}/.docker/config.json"
+        run: cat "${HOME}/.docker/config.json"
