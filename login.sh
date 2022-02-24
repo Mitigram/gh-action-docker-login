@@ -8,6 +8,7 @@ LOGIN_VERBOSE=${LOGIN_VERBOSE:-0}
 LOGIN_CONFIG=${LOGIN_CONFIG:-"${HOME}/.docker/config.json"}
 LOGIN_USERNAME=${LOGIN_USERNAME:-}
 LOGIN_PASSWORD=${LOGIN_PASSWORD:-}
+LOGIN_PASSWORD_STDIN=${LOGIN_PASSWORD_STDIN:-0}
 LOGIN_DEFAULT_REGISTRY=${LOGIN_DEFAULT_REGISTRY:-"docker.io"}
 
 # This uses the comments behind the options to show the help. Not extremly
@@ -20,7 +21,7 @@ usage() {
   exit "${1:-0}"
 }
 
-while getopts "c:u:p:vh-" opt; do
+while getopts "c:u:ip:vh-" opt; do
   case "$opt" in
     c) # Path to Docker configuration file, dir will be created if necessary
       LOGIN_CONFIG=$OPTARG;;
@@ -28,6 +29,8 @@ while getopts "c:u:p:vh-" opt; do
       LOGIN_USERNAME=$OPTARG;;
     p) # Password to use for authentication.
       LOGIN_PASSWORD=$OPTARG;;
+    i) # Obtain password from stdin instead
+      LOGIN_PASSWORD_STDIN=1;;
     v) # Turn on verbosity
       LOGIN_VERBOSE=1;;
     h) # Print help and exit
@@ -71,6 +74,7 @@ if ! [ -d "$(dirname "$LOGIN_CONFIG")" ]; then
   mkdir -p "$(dirname "$LOGIN_CONFIG")"
   touch "$LOGIN_CONFIG"
 fi
+set -x
 
 # No argument, default to Docker
 if [ "$#" = "0" ]; then
@@ -83,10 +87,22 @@ fi
 if [ "$LOGIN_REGISTRY" = "docker.io" ]; then
   LOGIN_REGISTRY="https://index.docker.io/v1/"
 fi
+# Scream when there are two password input methods setup
+if [ -n "$LOGIN_PASSWORD" ] && [ "$LOGIN_PASSWORD_STDIN" = "1" ]; then
+  usage 1
+fi
+
+# Get password from stdin
+if [ "$LOGIN_PASSWORD_STDIN" = "1" ]; then
+  read -r LOGIN_PASSWORD
+fi
 
 # Generate a Docker config compatible file with just the information from the
-# command-line.
+# command-line. Arrange to get it wiped in all circumstances, and do this BEFORE
+# it even gets filled with content.
 tmp_auth=$(mktemp -t authXXXXX.json)
+#shellcheck disable=SC2064  # We WANT to expand now!
+trap "rm -f $tmp_auth" EXIT
 printf '{"auths":{"%s":{"auth":"%s"}}}\n' \
   "$LOGIN_REGISTRY" \
   "$(printf %s:%s\\n "$LOGIN_USERNAME" "$LOGIN_PASSWORD"| tr -d '\n' | base64 -i -w 0)" \
@@ -105,4 +121,3 @@ fi
 
 # Make configuration the real one and cleanup.
 mv "$tmp_config" "$LOGIN_CONFIG"
-rm -rf "$tmp_auth"
