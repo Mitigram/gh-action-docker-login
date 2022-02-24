@@ -1,3 +1,5 @@
+# This just exercise the action on itself with a dummy login at `test.ghcr.io`
+# every time a change is pushed.
 name: test
 on: push
 jobs:
