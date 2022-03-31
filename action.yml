@@ -43,12 +43,12 @@ runs:
       id: login
       shell: bash
       run: |
-        printf %s\\n "${{ inputs.password }}" | "${{ github.action_path }}/login.sh" \
-                                        -i \
-                                        -u "${{ inputs.username }}" \
-                                        ${{ inputs.options }} \
-                                        -- \
-                                          "${{ inputs.registry }}"
+        "${{ github.action_path }}/login.sh" \
+              -u '${{ inputs.username }}' \
+              -p '${{ inputs.password }}' \
+              ${{ inputs.options }} \
+              -- \
+                "${{ inputs.registry }}"
     -
       name: Schedule Logout
       id: logout
